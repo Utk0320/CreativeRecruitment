@@ -194,7 +194,15 @@ router.get('/coordinator/clubs', authenticateToken, requireRole('coordinator'), 
 });
 
 router.get('/coordinator/dashboard', authenticateToken, requireRole('coordinator'), (req, res) => {
-    db.all('SELECT id, name, category, description, logo_url FROM clubs WHERE coordinator_id = ? ORDER BY name', [req.user.id], (err, clubs) => {
+    db.all(`
+        SELECT c.id, c.name, c.category, c.description, c.logo_url,
+               COUNT(rd.id) AS drive_count
+        FROM clubs c
+        LEFT JOIN recruitment_drives rd ON rd.club_id = c.id
+        WHERE c.coordinator_id = ?
+        GROUP BY c.id
+        ORDER BY c.name
+    `, [req.user.id], (err, clubs) => {
         if (err) return res.status(500).json({ error: err.message });
         if (clubs.length === 0) return res.json({ clubs: [], club: null, stats: { totalApplications: 0, activeDrives: 0, shortlisted: 0 } });
 

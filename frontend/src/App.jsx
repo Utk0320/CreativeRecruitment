@@ -15,6 +15,7 @@ import StudentProfile from './pages/StudentProfile';
 import CoordinatorDashboard from './pages/CoordinatorDashboard';
 import CoordinatorDrives from './pages/CoordinatorDrives';
 import CoordinatorClubs from './pages/CoordinatorClubs';
+import CoordinatorProfile from './pages/CoordinatorProfile';
 import Footer from './components/Footer';
 import NotFound from './pages/NotFound';
 
@@ -90,6 +91,11 @@ const AppContent = () => {
                     <Route path="/coordinator/clubs" element={
                         <ProtectedRoute role="coordinator">
                             <CoordinatorClubs />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/coordinator/profile" element={
+                        <ProtectedRoute role="coordinator">
+                            <CoordinatorProfile />
                         </ProtectedRoute>
                     } />
                     <Route path="/student/profile" element={

@@ -1,13 +1,15 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { ArrowLeft, Award, Briefcase, Calendar, CheckCircle, Clock, Code2, Edit3, ExternalLink, FileText, GraduationCap, Mail, Plus, Search, Trash2, UserRound, Users, X } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { notifyDataChanged, useDataSync } from '../hooks/useDataSync';
 
 const emptyDrive = { title: '', description: '', eligibility: '', open_date: '', deadline: '', club_id: '' };
 
 const CoordinatorDrives = () => {
     const { user } = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [drives, setDrives] = useState([]);
     const [clubs, setClubs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -33,6 +35,12 @@ const CoordinatorDrives = () => {
             .finally(() => setLoading(false));
     }, []);
 
+    useEffect(() => {
+        axios.get('http://localhost:5000/api/coordinator/clubs')
+            .then(res => setClubs(res.data))
+            .catch(err => console.error(err));
+    }, []);
+
     useDataSync(fetchDrives);
 
     const fetchApplications = (driveId) => {
@@ -40,6 +48,26 @@ const CoordinatorDrives = () => {
             .then(res => setApplications(res.data))
             .catch(err => setError(err.response?.data?.error || 'Unable to load applications'));
     };
+
+    const selectedClubId = searchParams.get('club_id');
+    const filteredDrives = useMemo(
+        () => selectedClubId
+            ? drives.filter(drive => String(drive.club_id) === selectedClubId)
+            : drives,
+        [drives, selectedClubId]
+    );
+    const selectedClubName = clubs.find(club => String(club.id) === selectedClubId)?.name
+        || filteredDrives[0]?.club_name
+        || 'All clubs';
+
+    useEffect(() => {
+        if (!selectedClubId || !filteredDrives.length) return;
+        const firstDrive = filteredDrives[0];
+        setSelectedDrive(firstDrive);
+        setShowProfile(false);
+        setProfile(null);
+        fetchApplications(firstDrive.id);
+    }, [selectedClubId, filteredDrives]);
 
     const openCreate = async () => {
         setEditingDrive(null);
@@ -183,6 +211,11 @@ const CoordinatorDrives = () => {
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Manage Drives</h1>
                     <p className="text-gray-600 mt-2">Create recruitment drives and review applications.</p>
+                    {selectedClubId && (
+                        <div className="mt-3 inline-flex items-center rounded-full bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-200">
+                            Club: {selectedClubName}
+                        </div>
+                    )}
                 </div>
                 <button
                     onClick={openCreate}
@@ -241,10 +274,18 @@ const CoordinatorDrives = () => {
                 {/* Drives List */}
                 <div className="lg:col-span-1 space-y-4">
                     <h2 className="text-xl font-bold text-gray-900 mb-4">Your Drives</h2>
-                    {drives.length === 0 ? (
-                        <p className="text-gray-500 bg-gray-50 p-4 rounded-lg text-center">No active drives. Create one to get started.</p>
+                    {selectedClubId && (
+                        <button
+                            onClick={() => setSearchParams({})}
+                            className="mb-3 inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                        >
+                            <ArrowLeft size={13} /> View all clubs
+                        </button>
+                    )}
+                    {filteredDrives.length === 0 ? (
+                        <p className="text-gray-500 bg-gray-50 p-4 rounded-lg text-center">No drives for this club. Create one to get started.</p>
                     ) : (
-                        drives.map(drive => (
+                        filteredDrives.map(drive => (
                             <div 
                                 key={drive.id}
                                 onClick={() => {
@@ -367,7 +408,7 @@ const CoordinatorDrives = () => {
                             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                                 <div className="bg-gray-50 border-b border-gray-200 p-6">
                                     <h2 className="text-xl font-bold text-gray-900">Applications for {selectedDrive.title}</h2>
-                                    <p className="text-sm text-gray-500 mt-1">Review candidates and update their status</p>
+                                    <p className="text-sm text-gray-500 mt-1">{selectedClubName} · Review candidates and update their status</p>
                                 {selectedDrive.status === 'open' && (
                                     <button onClick={() => updateDriveStatus(selectedDrive, 'closed')} className="mt-4 inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
                                         <Clock size={14} /> Close Drive
@@ -402,23 +443,28 @@ const CoordinatorDrives = () => {
                                 ) : (
                                     <div className="space-y-4">
                                         {filteredApplications.map(app => (
-                                            <div key={app.id} className="border border-gray-200 rounded-lg p-5 hover:bg-gray-50 transition-colors">
-                                                <div className="flex justify-between items-start mb-4 gap-4">
+                                            <article key={app.id} className="rounded-xl border border-gray-200 bg-white p-5 transition hover:border-indigo-200 hover:bg-gray-50/50 hover:shadow-sm">
+                                                <div className="flex flex-col gap-4 border-b border-gray-100 pb-4 sm:flex-row sm:items-start sm:justify-between">
                                                     <div>
                                                         <h3 className="text-lg font-semibold text-gray-900">{app.student_name}</h3>
-                                                        <div className="flex items-center text-sm text-gray-500 space-x-3 mt-1">
+                                                        <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-500">
                                                             <span>{app.department}</span>
-                                                            <span>•</span>
+                                                            <span className="text-gray-300">•</span>
                                                             <span>Year {app.year}</span>
-                                                            <span>•</span>
-                                                            app.portfolio_url ? <a href={app.portfolio_url} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline">Portfolio Link</a> : <span className="text-gray-400">No portfolio</span>
+                                                            <span className="text-gray-300">•</span>
+                                                            {app.portfolio_url ? (
+                                                                <a href={app.portfolio_url} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline">Portfolio Link</a>
+                                                            ) : (
+                                                                <span className="text-gray-400">No portfolio</span>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                    <button onClick={() => openProfile(app)} disabled={profileLoading} className="flex shrink-0 items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-60">
+                                                    <button onClick={() => openProfile(app)} disabled={profileLoading} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-100 disabled:opacity-60">
                                                         <UserRound size={15} /> View Profile
                                                     </button>
                                                 </div>
-                                                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                                                <div className="mt-4 flex items-center gap-2">
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
                                                         app.status === 'Applied' ? 'bg-blue-50 text-blue-700 border-blue-200' :
                                                         app.status === 'Under Review' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
                                                         app.status === 'Shortlisted' ? 'bg-purple-50 text-purple-700 border-purple-200' :
@@ -427,8 +473,9 @@ const CoordinatorDrives = () => {
                                                     }`}>
                                                         {app.status}
                                                     </span>
+                                                </div>
                                                 
-                                                <div className="bg-gray-50 rounded p-4 mb-4 text-sm text-gray-700">
+                                                <div className="mt-4 rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
                                                     <span className="font-semibold text-gray-900 block mb-1">Motivation / Answers:</span>
                                                     {app.motivation || 'No motivation provided.'}
                                                 </div>
@@ -445,7 +492,7 @@ const CoordinatorDrives = () => {
                                                     <button onClick={() => updateStatus(app.id, 'Selected')} className="text-xs px-3 py-1.5 bg-green-100 text-green-800 rounded hover:bg-green-200 transition-colors">Accept</button>
                                                     <button onClick={() => updateStatus(app.id, 'Rejected')} className="text-xs px-3 py-1.5 bg-red-100 text-red-800 rounded hover:bg-red-200 transition-colors">Reject</button>
                                                 </div>
-                                            </div>
+                                            </article>
                                         ))}
                                     </div>
                                 )}

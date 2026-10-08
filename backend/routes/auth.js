@@ -3,17 +3,21 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { db } = require('../utils/db');
-const { authenticateToken } = require('../middlewares/authMiddleware');
-
+const { authenticateToken } = require('../middlewares/authMiddleware');const { isOfficialCollegeEmail } = require('../utils/emailValidation');
 const SECRET = process.env.JWT_SECRET || 'supersecretjwtkey123';
 
 router.post('/register', async (req, res) => {
     const { name, email, password, role, department, year, phone } = req.body;
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
     const normalizedRole = role === 'coordinator' ? 'coordinator' : 'student';
+    const emailFormat = normalizedRole === 'coordinator'
+        ? 'mayurishelke@mmcoe.edu.in'
+        : 'jashwantnukala2025.comp@mmcoe.edu.in';
 
-    if (!name?.trim() || !/^\S+@\S+\.\S+$/.test(normalizedEmail) || password.length < 8) {
-        return res.status(400).json({ error: 'Enter a valid name, email, and password of at least 8 characters.' });
+    if (!name?.trim() || !isOfficialCollegeEmail(normalizedEmail, normalizedRole) || password.length < 8) {
+        return res.status(400).json({
+            error: `Use your official college email, for example ${emailFormat}. Students must use the .comp email format.`
+        });
     }
     if (normalizedRole === 'coordinator' && (!department?.trim() || !year)) {
         return res.status(400).json({ error: 'Coordinator accounts require a department and year.' });

@@ -14,6 +14,7 @@ const coordinatorLinks = [
     { to: '/coordinator/dashboard', label: 'Dashboard' },
     { to: '/coordinator/clubs', label: 'Clubs' },
     { to: '/coordinator/drives', label: 'Drives' },
+    { to: '/coordinator/profile', label: 'Edit Profile' },
 ];
 
 const guestLinks = [{ to: '/explore-clubs', label: 'Explore Clubs' }];
