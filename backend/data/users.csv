@@ -1,0 +1,4 @@
+id,name,email,role,department,year,phone,portfolio_url
+1,Student Demo,student@demo.com,student,Computer Science,3,1234567890,https://github.com/student
+2,Coordinator Demo,coordinator@demo.com,coordinator,Electronics,4,0987654321,https://github.com/coord
+
