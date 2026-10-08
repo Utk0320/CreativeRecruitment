@@ -33,11 +33,11 @@ const Register = () => {
 
         const email = formData.email.trim().toLowerCase();
         const expectedPattern = formData.role === 'coordinator'
-            ? 'example@mmcoe.edu.in'
-            : 'studentname2025.comp@mmcoe.edu.in';
+            ? 'name@mmcoe.edu.in'
+            : 'nameXXXX.department@mmcoe.edu.in';
         const isOfficialCollegeEmail = formData.role === 'coordinator'
             ? /^[^\s@]+@mmcoe\.edu\.in$/i.test(email)
-            : /^[^\s@]+\.comp@mmcoe\.edu\.in$/i.test(email);
+            : /^[^\s@]+\d+\.[a-z]+@mmcoe\.edu\.in$/i.test(email);
 
         if (!isOfficialCollegeEmail) {
             return setError(`Use an official MMCOE email matching ${expectedPattern}.`);
@@ -144,14 +144,14 @@ const Register = () => {
                                         type="email"
                                         name="email"
                                         required
-                                        placeholder={formData.role === 'student' ? 'name2025.comp@mmcoe.edu.in' : 'name@mmcoe.edu.in'}
+                                        placeholder={formData.role === 'student' ? 'name2025.department@mmcoe.edu.in' : 'name@mmcoe.edu.in'}
                                         className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-xl py-2.5 bg-gray-50 border hover:bg-white"
                                         onChange={handleChange}
                                     />
                                 </div>
                                 <p className="mt-2 text-xs text-gray-500">
                                     {formData.role === 'student'
-                                        ? 'Student emails must use the .comp format.'
+                                        ? 'Student emails must include your joining year and department code.'
                                         : 'Coordinator emails must use the official college domain.'}
                                 </p>
                             </div>

@@ -1,5 +1,5 @@
 const COLLEGE_DOMAIN = 'mmcoe.edu.in';
-const STUDENT_EMAIL_PATTERN = /^[^\s@]+\.comp@mmcoe\.edu\.in$/i;
+const STUDENT_EMAIL_PATTERN = /^[^\s@]+\d+\.[a-z]+@mmcoe\.edu\.in$/i;
 const COORDINATOR_EMAIL_PATTERN = /^[^\s@]+@mmcoe\.edu\.in$/i;
 
 const isOfficialCollegeEmail = (email, role) => {
