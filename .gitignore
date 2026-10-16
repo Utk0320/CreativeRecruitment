@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+coverage/
+*.log
+*.csv
+*.db
+*.sqlite
+*.sqlite3
+backend/uploads/
+.DS_Store
