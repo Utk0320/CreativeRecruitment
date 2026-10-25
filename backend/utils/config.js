@@ -41,7 +41,7 @@ const validateEnvironment = (env = process.env) => {
     if (env.NODE_ENV === 'production' && emailProvider !== 'smtp') {
         throw new Error('SMTP email delivery is required in production');
     }
-    if (emailProvider === 'smtp' && (!env.SMTP_HOST || !env.EMAIL_FROM || !env.FRONTEND_URL)) {
+    if (emailProvider === 'smtp' && (!env.SMTP_HOST?.trim() || !env.EMAIL_FROM?.trim() || !env.FRONTEND_URL?.trim())) {
         throw new Error('SMTP_HOST, EMAIL_FROM, and FRONTEND_URL are required for SMTP delivery');
     }
     const allowedOrigins = (env.CORS_ORIGIN || 'http://localhost:5173')
@@ -52,7 +52,7 @@ const validateEnvironment = (env = process.env) => {
         if (allowedOrigins.some(origin => {
             try { return new URL(origin).protocol !== 'https:'; } catch { return true; }
         })) throw new Error('CORS_ORIGIN must contain only valid HTTPS origins in production');
-        if (emailProvider === 'smtp' && new URL(env.FRONTEND_URL).protocol !== 'https:') {
+        if (emailProvider === 'smtp' && new URL(env.FRONTEND_URL.trim()).protocol !== 'https:') {
             throw new Error('FRONTEND_URL must use HTTPS in production');
         }
     }

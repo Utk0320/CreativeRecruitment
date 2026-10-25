@@ -145,8 +145,35 @@ Local password/email verification works with `EMAIL_PROVIDER=console`; verificat
 ## Authentication & Security
 The API requires a configured `JWT_SECRET` of at least 32 characters and refuses to start otherwise. Passwords are hashed using **bcrypt**. Sessions use an httpOnly JWT cookie and a readable double-submit CSRF cookie; the frontend does not persist JWTs in browser storage. Every existing state-changing route runs through `withTransaction()` and writes an append-only `activity_log` row before commit. Do not commit `.env` files, SQLite databases, uploads, or generated logs. Admin-provisioned coordinator accounts, refresh-token rotation, and college SSO are being implemented in Phase 1.
 
-### Production Deployment
-Serve both the frontend and API over HTTPS, under the same site (for example, `recruit.example.edu.in` and `api.example.edu.in`). Cross-site frontend/API deployments are not supported by the default `SameSite=Lax` cookie flow. Set `CORS_ORIGIN` to the exact HTTPS frontend origin, `FRONTEND_URL` to that HTTPS frontend, `VITE_API_URL` to the HTTPS API base (for example, `https://api.example.edu.in/api`), `COOKIE_SECURE=true`, `COOKIE_SAME_SITE=lax`, and `EMAIL_PROVIDER=smtp` with SMTP configuration. Set `COOKIE_DOMAIN=.example.edu.in` so the frontend can read the CSRF double-submit cookie across the two subdomains; leave it empty for local development. The JWT cookie remains host-only and httpOnly. Terminate TLS at a trusted reverse proxy and forward HTTPS correctly to Express. Never disable Secure cookies in production.
+### Production Deployment (Render)
+#### 1. Backend Web Service
+* **Root Directory:** `backend` (or leave empty)
+* **Build Command:** `npm install`
+* **Start Command:** `npm start`
+* **Required Environment Variables:**
+  * `NODE_ENV`: `production`
+  * `PORT`: `10000`
+  * `HOST`: `0.0.0.0`
+  * `JWT_SECRET`: Random string of 32+ characters
+  * `CORS_ORIGIN`: `https://<your-frontend>.onrender.com`
+  * `FRONTEND_URL`: `https://<your-frontend>.onrender.com`
+  * `COOKIE_SAME_SITE`: `none`
+  * `COOKIE_SECURE`: `true`
+  * `EMAIL_PROVIDER`: `smtp`
+  * `SMTP_HOST`: `smtp.gmail.com` (or your SMTP provider host)
+  * `SMTP_PORT`: `587`
+  * `SMTP_SECURE`: `false`
+  * `SMTP_USER`: your SMTP username / email
+  * `SMTP_PASSWORD`: your SMTP password / App Password
+  * `EMAIL_FROM`: your sender email address
+
+#### 2. Frontend Static Site
+* **Root Directory:** `frontend`
+* **Build Command:** `npm install && npm run build`
+* **Publish Directory:** `dist`
+* **Redirects / Rewrites:** `/*` -> `/index.html` (Rewrite)
+* **Environment Variables:**
+  * `VITE_API_URL`: `https://<your-backend>.onrender.com/api`
 
 ## Checks
 Run `npm test` in `backend`, then `npm run lint` and `npm run build` in `frontend`. The CI workflow runs these gates and applies migrations against a clean database.
