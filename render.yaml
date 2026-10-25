@@ -24,7 +24,29 @@ services:
       - key: SSO_PROVIDER
         value: none
       - key: EMAIL_PROVIDER
-        value: console
+        value: smtp
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: creativerecruitment-frontend
+          property: url
+      - key: CORS_ORIGIN
+        fromService:
+          type: web
+          name: creativerecruitment-frontend
+          property: url
 
   # 2. Frontend SPA (Static Site)
   - type: web

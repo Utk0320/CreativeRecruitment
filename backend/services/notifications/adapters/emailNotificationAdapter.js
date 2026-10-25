@@ -22,7 +22,7 @@ class EmailNotificationAdapter {
             const transporter = nodemailer.createTransport({
                 host: this.env.SMTP_HOST,
                 port: Number(this.env.SMTP_PORT) || 587,
-                secure: this.env.SMTP_SECURE === 'true',
+                secure: this.env.SMTP_SECURE === 'true' || Number(this.env.SMTP_PORT) === 465,
                 auth: this.env.SMTP_USER ? { user: this.env.SMTP_USER, pass: this.env.SMTP_PASSWORD } : undefined
             });
 
