@@ -17,6 +17,10 @@ services:
         value: ./database/creativerecruit.db
       - key: TIMEZONE
         value: Asia/Kolkata
+      - key: COOKIE_SAME_SITE
+        value: none
+      - key: COOKIE_SECURE
+        value: "true"
       - key: SSO_PROVIDER
         value: none
       - key: EMAIL_PROVIDER
@@ -33,4 +37,3 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
-
