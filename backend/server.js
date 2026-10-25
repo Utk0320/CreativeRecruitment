@@ -162,7 +162,8 @@ const start = async () => {
     await runMigrations(db);
     cron.schedule('*/15 * * * *', () => publishAndCloseDrives(config.timezone), { timezone: config.timezone });
     publishAndCloseDrives(config.timezone);
-    app.listen(config.port, () => console.log(`Server running on port ${config.port}`));
+    const host = process.env.HOST || '0.0.0.0';
+    app.listen(config.port, host, () => console.log(`Server running on port ${config.port} (host: ${host})`));
 };
 
 if (require.main === module) {

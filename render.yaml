@@ -1,0 +1,36 @@
+services:
+  # 1. Backend API (Web Service)
+  - type: web
+    name: creativerecruitment-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_PATH
+        value: ./database/creativerecruit.db
+      - key: TIMEZONE
+        value: Asia/Kolkata
+      - key: SSO_PROVIDER
+        value: none
+      - key: EMAIL_PROVIDER
+        value: console
+
+  # 2. Frontend SPA (Static Site)
+  - type: web
+    name: creativerecruitment-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
